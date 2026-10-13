@@ -104,5 +104,5 @@ class HarvesterAreaContext:
     player_is_sub: bool
     player_server_id: int
     player_jobs_lvl_by_id: Mapping[int, int]
-    bank_storage_by_gid: Mapping[int, ObjectItemInventory]
+    storage_by_gid: Mapping[int, ObjectItemInventory]
     current_area_infos_by_server_and_character: Mapping[tuple[int, int], AreaInfo]

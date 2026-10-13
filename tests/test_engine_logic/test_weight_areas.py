@@ -16,6 +16,7 @@ def test_area_selection_scores_accessible_harvestables_without_map_scan(
     data_reader = SimpleNamespace(
         sub_area_by_id={10: SimpleNamespace(harvestables=[100])},
         sub_areas_by_area_id={1: [10]},
+        item_by_id={100: SimpleNamespace(level=1)},
     )
     collectable_weight = MagicMock(return_value=10.0)
 
@@ -37,7 +38,7 @@ def test_area_selection_scores_accessible_harvestables_without_map_scan(
             player_is_sub=True,
             player_server_id=1,
             player_jobs_lvl_by_id={5: 200},
-            bank_storage_by_gid={},
+            storage_by_gid={},
             current_area_infos_by_server_and_character={},
         ),
         previous_area_info_played=[],
@@ -46,3 +47,45 @@ def test_area_selection_scores_accessible_harvestables_without_map_scan(
 
     assert result == accessible_area
     collectable_weight.assert_called_once()
+
+
+def test_area_selection_ignores_harvestables_above_job_level(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    harvestable_area = AreaInfo(area_id=1, sub_area_id=10)
+    too_high_level_area = AreaInfo(area_id=2, sub_area_id=20)
+    data_reader = SimpleNamespace(
+        sub_area_by_id={
+            10: SimpleNamespace(harvestables=[100]),
+            20: SimpleNamespace(harvestables=[200]),
+        },
+        sub_areas_by_area_id={1: [10], 2: [20]},
+        item_by_id={100: SimpleNamespace(level=10), 200: SimpleNamespace(level=50)},
+    )
+
+    monkeypatch.setattr(weight_areas, "AREAS_SUB_WITH_WEIGHT", [harvestable_area, too_high_level_area])
+    monkeypatch.setattr(weight_areas, "DataReader", lambda: data_reader)
+    monkeypatch.setattr(
+        weight_areas,
+        "GameDataController",
+        lambda: SimpleNamespace(get_item_job_by_gfx=lambda: {1: (100, 5), 2: (200, 5)}),
+    )
+    monkeypatch.setattr(weight_areas, "get_weight_collectable", MagicMock(return_value=10.0))
+
+    result = weight_areas.get_random_best_area_info(
+        old_area_id=None,
+        old_sub_area_id=None,
+        context=HarvesterAreaContext(
+            player_level=200,
+            player_waypoint_map_ids=frozenset(),
+            player_is_sub=True,
+            player_server_id=1,
+            player_jobs_lvl_by_id={5: 10},
+            storage_by_gid={},
+            current_area_infos_by_server_and_character={},
+        ),
+        previous_area_info_played=[],
+        logger=MagicMock(),
+    )
+
+    assert result == harvestable_area

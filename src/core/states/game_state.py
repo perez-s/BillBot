@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any
 
+from DBDofusUnity.datas.protos.non_obf.game.common_pb2 import ObjectItemInventory
 from DBDofusUnity.dofus_unity_reader.game_constants.characteristic import CharacteristicEnum
 from DBDofusUnity.dofus_unity_reader.grid.map_point import MapPoint
 from src.core.config import BehaviorSettings
@@ -43,6 +44,11 @@ class GameState:
     def apply_settings(self, settings: BehaviorSettings) -> None:
         self.settings = settings
         self.guild_chest.settings = settings
+
+    def get_storage_objects_by_gid(self) -> dict[int, ObjectItemInventory]:
+        if self.guild_chest.can_access_guild_chest:
+            return self.guild_chest.storage.get_all_items_by_gid()
+        return self.inventory.get_bank_objects_by_gid()
 
     def clear_connection_scoped_state(self) -> None:
         self.map.clear_state()

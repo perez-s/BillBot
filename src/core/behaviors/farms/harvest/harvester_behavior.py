@@ -82,7 +82,7 @@ class HarvesterBehavior(BaseFarmBehavior):
                 map_id,
                 self.map_ids_to_explore,
                 self.game_state.player.jobs_lvl_by_id,
-                self.game_state.guild_chest.storage.get_all_items_by_gid(),
+                self.game_state.get_storage_objects_by_gid(),
                 self.game_state.player.is_sub,
                 self.game_state.player.server_id,
             ),

@@ -29,18 +29,17 @@ def get_fast_weight_harvester_sub_area(
     if not harvestables:
         return 0
 
-    weight = sum(
-        get_weight_collectable(
-            job_id,
-            job_lvl_by_id.get(job_id, 1),
-            item_id,
-            storage_by_gid,
-            is_sub,
-            server_id,
-        )
-        for item_id in harvestables
-        if (job_id := job_id_by_item_id.get(item_id)) is not None
-    )
+    item_by_id = DataReader().item_by_id
+    weight: float = 0
+    for item_id in harvestables:
+        job_id = job_id_by_item_id.get(item_id)
+        if job_id is None:
+            continue
+        job_lvl = job_lvl_by_id.get(job_id, 1)
+        item_level = item_by_id[item_id].level
+        if item_level is None or item_level > job_lvl:
+            continue
+        weight += get_weight_collectable(job_id, job_lvl, item_id, storage_by_gid, is_sub, server_id)
     return weight / len(harvestables)
 
 
@@ -99,7 +98,7 @@ def get_random_best_area_info(
         item_id: job_id for item_id, job_id in GameDataController().get_item_job_by_gfx().values()
     }
     job_lvl_by_id = dict(context.player_jobs_lvl_by_id)
-    storage_by_gid = dict(context.bank_storage_by_gid)
+    storage_by_gid = dict(context.storage_by_gid)
 
     for area_info in accessible_area_infos:
         if area_info.sub_area_id:

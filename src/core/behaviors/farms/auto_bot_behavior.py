@@ -89,7 +89,7 @@ class AutoBotBehavior(RecoverableBehavior):
             player_is_sub=self.game_state.player.is_sub,
             player_server_id=self.game_state.player.server_id,
             player_jobs_lvl_by_id=self.game_state.player.jobs_lvl_by_id,
-            bank_storage_by_gid=self.game_state.inventory.get_bank_objects_by_gid(),
+            storage_by_gid=self.game_state.get_storage_objects_by_gid(),
             current_area_infos_by_server_and_character=(CURRENT_AREAS_PLAYING_INFOS_BY_SERVER_AND_CHARACTER),
         )
 
